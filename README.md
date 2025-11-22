@@ -1,14 +1,14 @@
-# ___________
+# Wordle
 
-A simple [raylib](https://www.raylib.com/index.html)-based implementation of ______________.
+A simple [raylib](https://www.raylib.com/index.html)-based implementation of [*Wordle*](https://www.nytimes.com/games/wordle/index.html).
 
 ## Compiling and Running
 
-Instructions assume you are (1) using Linux or macOS and (2) that you have [gcc (C99)](https://gcc.gnu.org/), [CMake](https://cmake.org/), and [git](https://git-scm.com/) installed. 
+Instructions assume you are (1) using Linux or macOS and (2) that you have [gcc (C99)](https://gcc.gnu.org/), [CMake](https://cmake.org/), and [git](https://git-scm.com/) installed.
 
 ```bash
-git clone _________________________
-cd _________________
+git clone https://github.com/bi3mer/c-wordle.git
+cd c-wordle
 ./setup.sh
 ```
 

@@ -2,10 +2,10 @@
 
 int main(void)
 {
-    const int screenWidth = 800;
-    const int screenHeight = 450;
+    const int screen_width = 800;
+    const int screen_height = 450;
 
-    InitWindow(screenWidth, screenHeight, "Raylib Template");
+    InitWindow(screen_width, screen_height, "Wordle");
     SetTargetFPS(60);
 
     while (!WindowShouldClose())
