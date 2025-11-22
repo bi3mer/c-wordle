@@ -42,16 +42,23 @@ int main(void)
     }
 
     ///////////////////////////////////////////////////////////////////////////
-    // Get Wordle Words
+    // Game Loop
     InitWindow(screen_width, screen_height, "Wordle");
     SetTargetFPS(60);
 
     while (!WindowShouldClose())
     {
+        //---------------------------------------------------------------------
+        // Game Logic
+        //---------------------------------------------------------------------
+
+        // get key presses and handle word checking
+
+        //---------------------------------------------------------------------
+        // Rendering
+        //---------------------------------------------------------------------
         BeginDrawing();
         ClearBackground(RAYWHITE);
-
-        DrawText("TEXT HERE", 190, 200, 20, BLACK);
 
         EndDrawing();
     }
