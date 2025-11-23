@@ -15,6 +15,15 @@
 #define CELL_SIZE 100
 #define CELL_SPACING 8
 
+typedef struct
+{
+    Color color;
+    char c;
+} Tile;
+
+static inline bool tile_str_compare(const Tile tiles[WORD_LENGTH - 1],
+                                    const char word[WORD_LENGTH]);
+
 int main(void)
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -28,20 +37,26 @@ int main(void)
     SetRandomSeed(time(NULL));
 
     Centered_Text title;
-    centered_text_init(&title, (char *)"Wordle Clone", 40, 30, WHITE,
-                       screen_width);
+    centered_text_init(&title, "Wordle Clone", 40, 30, WHITE, screen_width);
 
     // size_t word_index = GetRandomValue(0, NUM_WORDS - 1);
     size_t word_index = 0;
     int guess_index = 0;
     size_t guess_word_index = 0;
 
-    char guesses[NUM_GUESSES][WORD_LENGTH];
-    for (size_t i = 0; i < NUM_GUESSES; ++i)
+    Tile guesses[NUM_GUESSES][WORD_LENGTH];
+    for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
+    {
+        guesses[0][jj].color = RAYWHITE;
+        guesses[0][jj].c = '\0';
+    }
+
+    for (size_t i = 1; i < NUM_GUESSES; ++i)
     {
         for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
         {
-            guesses[i][jj] = '\0';
+            guesses[i][jj].color = BLACK;
+            guesses[i][jj].c = '\0';
         }
     }
 
@@ -57,30 +72,35 @@ int main(void)
         {
             if (isalpha(key) && guess_word_index < WORD_LENGTH)
             {
-                guesses[guess_index][guess_word_index] = (char)tolower(key);
+                guesses[guess_index][guess_word_index].c = (char)tolower(key);
                 ++guess_word_index;
-                guesses[guess_index][guess_word_index] = '\0';
+                guesses[guess_index][guess_word_index].c = '\0';
             }
             else if (key == KEY_BACKSPACE && guess_word_index > 0)
             {
                 --guess_word_index;
-                guesses[guess_index][guess_word_index] = '\0';
+                guesses[guess_index][guess_word_index].c = '\0';
             }
             else if (key == KEY_ENTER && guess_word_index >= WORD_LENGTH - 1)
             {
-                bool found_word = false;
-                for (size_t i = 0; i < NUM_WORDS; ++i)
+                size_t i;
+                for (i = 0; i < NUM_WORDS; ++i)
                 {
-                    if (strcmp(guesses[guess_index], WORDS[i]) == 0)
-                    {
-                        found_word = true;
+                    if (tile_str_compare(guesses[guess_index], WORDS[i]))
                         break;
-                    }
                 }
 
-                if (found_word)
+                if (i < NUM_WORDS)
                 {
+                    printf("Guessed word was valid! %s\n", WORDS[i]);
+                    // TODO: handle color for guesses
+
                     ++guess_index;
+                    for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
+                    {
+                        guesses[guess_index][jj].color = RAYWHITE;
+                    }
+
                     guess_word_index = 0;
 
                     // TODO: temporary indicator that the guess was not in the
@@ -106,39 +126,22 @@ int main(void)
 
         for (int row = 0; row < NUM_GUESSES; row++)
         {
+            const int y = start_y + row * (CELL_SIZE + CELL_SPACING);
+
             for (int col = 0; col < WORD_LENGTH - 1; col++)
             {
                 const int x = start_x + col * (CELL_SIZE + CELL_SPACING);
-                const int y = start_y + row * (CELL_SIZE + CELL_SPACING);
+                const Tile *t = &guesses[row][col];
 
-                const char c = guesses[row][col];
-                Color bgColor = BLACK;
-
-                if (row < guess_index)
-                {
-                    if (c == WORDS[word_index][col])
-                    {
-                        bgColor = GREEN;
-                    }
-                    else if (c != '\0')
-                    {
-                        bgColor = RAYWHITE;
-                    }
-                }
-                else if (row == guess_index)
-                {
-                    bgColor = RAYWHITE;
-                }
-
-                DrawRectangle(x, y, CELL_SIZE, CELL_SIZE, bgColor);
+                DrawRectangle(x, y, CELL_SIZE, CELL_SIZE, t->color);
 
                 DrawRectangleLinesEx((Rectangle){x, y, CELL_SIZE, CELL_SIZE}, 2,
                                      WHITE);
 
-                if (c != '\0')
+                if (t->c != '\0')
                 {
                     char buf[2];
-                    buf[0] = c;
+                    buf[0] = t->c;
                     buf[1] = '\0';
                     DrawText(buf, x + 30, y + 30, 60, BLACK);
                 }
@@ -152,4 +155,20 @@ int main(void)
     // Clean Up
     CloseWindow();
     return 0;
+}
+
+static inline bool tile_str_compare(const Tile tiles[WORD_LENGTH - 1],
+                                    const char word[WORD_LENGTH])
+{
+    bool res = true;
+    for (size_t i = 0; i < WORD_LENGTH; ++i)
+    {
+        if (tiles[i].c != word[i])
+        {
+            res = false;
+            break;
+        }
+    }
+
+    return res;
 }
