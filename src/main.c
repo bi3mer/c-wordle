@@ -52,8 +52,8 @@ int main(void)
         //---------------------------------------------------------------------
         // Game Logic
         //---------------------------------------------------------------------
-        char key = (char)GetCharPressed();
-        while (key != 0 && guess_word_index + 1 < WORD_LENGTH)
+        int key = GetKeyPressed();
+        while (key != 0 && guess_word_index < WORD_LENGTH)
         {
             if (isalpha(key))
             {
@@ -61,14 +61,24 @@ int main(void)
                 ++guess_word_index;
                 guesses[guess_index][guess_word_index] = '\0';
             }
+            else if (key == KEY_BACKSPACE)
+            {
+                --guess_word_index;
+                guesses[guess_index][guess_word_index] = '\0';
+            }
+            else if (key == KEY_ENTER || key == KEY_SPACE)
+            {
+                // todo: check that the word is in the dictionary
+                if (guess_word_index >= WORD_LENGTH - 1)
+                {
+                    ++guess_index;
+                    guess_word_index = 0;
 
-            key = (char)GetCharPressed();
-        }
+                    // handle the last guess case
+                }
+            }
 
-        if (IsKeyPressed(KEY_BACKSPACE) && guess_word_index > 0)
-        {
-            --guess_word_index;
-            guesses[guess_index][guess_word_index] = '\0';
+            key = GetKeyPressed();
         }
 
         //---------------------------------------------------------------------
@@ -84,6 +94,10 @@ int main(void)
 
         for (int row = 0; row < NUM_GUESSES; row++)
         {
+            if (row == guess_index)
+            {
+                printf("guess: %s\n", guesses[row]);
+            }
             for (int col = 0; col < WORD_LENGTH - 1; col++)
             {
                 const int x = start_x + col * (CELL_SIZE + CELL_SPACING);
