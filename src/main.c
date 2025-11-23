@@ -92,21 +92,42 @@ int main(void)
 
                 if (i < NUM_WORDS)
                 {
-                    // TODO: handle color for guesses
-
-                    ++guess_index;
-                    for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
+                    if (i == word_index)
                     {
-                        guesses[guess_index][jj].color = RAYWHITE;
+                        // TODO: PLAYER WON
+                    }
+                    else
+                    {
+                        for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
+                        {
+                            if (WORDS[word_index][jj] ==
+                                guesses[guess_index][jj].c)
+                            {
+                                guesses[guess_index][jj].color = GREEN;
+                            }
+                            else
+                            {
+                                guesses[guess_index][jj].color = GRAY;
+                            }
+                        }
+
+                        ++guess_index;
+                        for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
+                        {
+                            guesses[guess_index][jj].color = RAYWHITE;
+                        }
+
+                        guess_word_index = 0;
                     }
 
-                    guess_word_index = 0;
-
-                    // TODO: temporary indicator that the guess was not in the
+                    // TODO: If the number of guesses is greater than the number
+                    //       of rows, then the game is over and the player lost
+                }
+                else
+                {
+                    // TODO: Temporary indicator that the guess was not in the
                     //       word list
                 }
-
-                // TODO: handle the last guess case
             }
 
             key = GetKeyPressed();
