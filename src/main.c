@@ -10,7 +10,7 @@
 #include "words.h"
 
 #define NUM_GUESSES 6
-#define WORD_LENGTH 6 // 5 + 1 for '\0'
+#define WORD_LENGTH 5
 
 #define CELL_SIZE 100
 #define CELL_SPACING 8
@@ -21,7 +21,7 @@ typedef struct
     char c;
 } Tile;
 
-static inline bool tile_str_compare(const Tile tiles[WORD_LENGTH - 1],
+static inline bool tile_str_compare(const Tile tiles[WORD_LENGTH],
                                     const char word[WORD_LENGTH]);
 
 int main(void)
@@ -92,7 +92,6 @@ int main(void)
 
                 if (i < NUM_WORDS)
                 {
-                    printf("Guessed word was valid! %s\n", WORDS[i]);
                     // TODO: handle color for guesses
 
                     ++guess_index;
@@ -128,7 +127,7 @@ int main(void)
         {
             const int y = start_y + row * (CELL_SIZE + CELL_SPACING);
 
-            for (int col = 0; col < WORD_LENGTH - 1; col++)
+            for (int col = 0; col < WORD_LENGTH; col++)
             {
                 const int x = start_x + col * (CELL_SIZE + CELL_SPACING);
                 const Tile *t = &guesses[row][col];
@@ -157,7 +156,7 @@ int main(void)
     return 0;
 }
 
-static inline bool tile_str_compare(const Tile tiles[WORD_LENGTH - 1],
+static inline bool tile_str_compare(const Tile tiles[WORD_LENGTH],
                                     const char word[WORD_LENGTH])
 {
     bool res = true;
