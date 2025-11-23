@@ -1,64 +1,72 @@
 #include "raylib.h"
+#include <ctype.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 
-#ifdef _WIN32
-#define WORDS_FILE "assets\\words.txt"
-#else
-#define WORDS_FILE "assets/words.txt"
-#endif
+#include "words.h"
 
-#define NUM_WORDS 2316
+#define NUM_GUESSES 6
+#define WORD_LENGTH 6 // 5 + 1 for '\0'
 
 int main(void)
 {
+    ///////////////////////////////////////////////////////////////////////////
+    // Set up
     const int screen_width = 800;
     const int screen_height = 450;
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Get words from the text file
-    char words[NUM_WORDS][5];
+    InitWindow(screen_width, screen_height, "Wordle");
+    SetTargetFPS(60);
+
+    SetRandomSeed(time(NULL));
+
+    size_t word_index = GetRandomValue(0, NUM_WORDS - 1);
+    size_t i;
+    size_t guess_index = 0;
+    size_t guess_word_index = 0;
+
+    char guesses[NUM_GUESSES][WORD_LENGTH];
+    for (i = 0; i < NUM_GUESSES; ++i)
     {
-        size_t word_index = 0;
-        FILE *f = fopen(WORDS_FILE, "r");
-        if (!f)
-        {
-            fprintf(stderr, "ERROR: unable to open word text file: %s\n",
-                    WORDS_FILE);
-            exit(1);
-        }
-
-        char buffer[6];
-        while (fgets(buffer, sizeof(buffer), f))
-        {
-            buffer[5] = '\0'; // skip new line
-            strcpy(words[word_index], buffer);
-            ++word_index;
-        }
-
-        fclose(f);
+        guesses[i][0] = '\0';
     }
 
     ///////////////////////////////////////////////////////////////////////////
     // Game Loop
-    InitWindow(screen_width, screen_height, "Wordle");
-    SetTargetFPS(60);
-
     while (!WindowShouldClose())
     {
         //---------------------------------------------------------------------
         // Game Logic
         //---------------------------------------------------------------------
+        char key = (char)GetCharPressed();
+        while (key != 0 && guess_word_index + 1 < WORD_LENGTH)
+        {
+            if (isalpha(key))
+            {
+                guesses[guess_index][guess_word_index] = (char)tolower(key);
+                ++guess_word_index;
+                guesses[guess_index][guess_word_index] = '\0';
+            }
 
-        // get key presses and handle word checking
+            key = (char)GetCharPressed();
+        }
+
+        if (IsKeyPressed(KEY_BACKSPACE) && guess_word_index > 0)
+        {
+            --guess_word_index;
+            guesses[guess_index][guess_word_index] = '\0';
+        }
 
         //---------------------------------------------------------------------
         // Rendering
         //---------------------------------------------------------------------
         BeginDrawing();
-        ClearBackground(RAYWHITE);
+        ClearBackground(BLACK);
+
+        DrawText(guesses[0], 100, 100, 40, WHITE);
 
         EndDrawing();
     }
@@ -66,12 +74,5 @@ int main(void)
     ///////////////////////////////////////////////////////////////////////////
     // Clean Up
     CloseWindow();
-
-    for (size_t i = 0; i < NUM_WORDS; ++i)
-    {
-        printf("%s\n", words[i]);
-        free(words[i]);
-    }
-
     return 0;
 }

@@ -29,8 +29,27 @@ file(GLOB_RECURSE SOURCES
     "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
 )
 
-# Create executable
-add_executable(${PROJECT_NAME} ${SOURCES})
+# Generate embedded words header
+add_custom_command(
+    OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/words.h
+    COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/build_scripts/embed_words.py
+            ${CMAKE_CURRENT_SOURCE_DIR}/assets/words.txt
+            ${CMAKE_CURRENT_BINARY_DIR}/words.h
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/assets/words.txt
+            ${CMAKE_CURRENT_SOURCE_DIR}/build_scripts/embed_words.py
+    COMMENT "Generating embedded words header"
+)
+
+# Add the generated header as a dependency
+add_executable(${PROJECT_NAME} ${SOURCES} ${CMAKE_CURRENT_BINARY_DIR}/words.h)
+
+# Make sure build directory is in include path (add this to your existing target_include_directories)
+target_include_directories(${PROJECT_NAME} PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${RAYLIB_INCLUDE_DIR}
+    ${CMAKE_CURRENT_BINARY_DIR}  # Add this line
+)
 
 # Set output directories
 set_target_properties(${PROJECT_NAME} PROPERTIES
