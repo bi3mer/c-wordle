@@ -53,29 +53,41 @@ int main(void)
         // Game Logic
         //---------------------------------------------------------------------
         int key = GetKeyPressed();
-        while (key != 0 && guess_word_index < WORD_LENGTH)
+        while (key != 0)
         {
-            if (isalpha(key))
+            if (isalpha(key) && guess_word_index < WORD_LENGTH)
             {
                 guesses[guess_index][guess_word_index] = (char)tolower(key);
                 ++guess_word_index;
                 guesses[guess_index][guess_word_index] = '\0';
             }
-            else if (key == KEY_BACKSPACE)
+            else if (key == KEY_BACKSPACE && guess_word_index > 0)
             {
                 --guess_word_index;
                 guesses[guess_index][guess_word_index] = '\0';
             }
-            else if (key == KEY_ENTER || key == KEY_SPACE)
+            else if (key == KEY_ENTER && guess_word_index >= WORD_LENGTH - 1)
             {
-                // todo: check that the word is in the dictionary
-                if (guess_word_index >= WORD_LENGTH - 1)
+                bool found_word = false;
+                for (size_t i = 0; i < NUM_WORDS; ++i)
+                {
+                    if (strcmp(guesses[guess_index], WORDS[i]) == 0)
+                    {
+                        found_word = true;
+                        break;
+                    }
+                }
+
+                if (found_word)
                 {
                     ++guess_index;
                     guess_word_index = 0;
 
-                    // handle the last guess case
+                    // TODO: temporary indicator that the guess was not in the
+                    //       word list
                 }
+
+                // TODO: handle the last guess case
             }
 
             key = GetKeyPressed();
@@ -94,10 +106,6 @@ int main(void)
 
         for (int row = 0; row < NUM_GUESSES; row++)
         {
-            if (row == guess_index)
-            {
-                printf("guess: %s\n", guesses[row]);
-            }
             for (int col = 0; col < WORD_LENGTH - 1; col++)
             {
                 const int x = start_x + col * (CELL_SIZE + CELL_SPACING);
