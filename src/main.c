@@ -21,8 +21,8 @@ typedef struct
     char c;
 } Tile;
 
-static inline bool tile_str_compare(const Tile tiles[WORD_LENGTH],
-                                    const char word[WORD_LENGTH]);
+static inline bool compare_tile_to_string(const Tile tiles[WORD_LENGTH],
+                                          const char word[WORD_LENGTH]);
 
 int main(void)
 {
@@ -60,6 +60,8 @@ int main(void)
         }
     }
 
+    int invalid_word_frame_count = -1;
+
     ///////////////////////////////////////////////////////////////////////////
     // Game Loop
     while (!WindowShouldClose())
@@ -86,7 +88,7 @@ int main(void)
                 size_t i;
                 for (i = 0; i < NUM_WORDS; ++i)
                 {
-                    if (tile_str_compare(guesses[guess_index], WORDS[i]))
+                    if (compare_tile_to_string(guesses[guess_index], WORDS[i]))
                         break;
                 }
 
@@ -94,10 +96,15 @@ int main(void)
                 {
                     if (i == word_index)
                     {
+                        for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
+                        {
+                            guesses[guess_index][jj].color = GREEN;
+                        }
                         // TODO: PLAYER WON
                     }
                     else
                     {
+                        // figure out tile colors for the guess
                         for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
                         {
                             if (WORDS[word_index][jj] ==
@@ -125,12 +132,16 @@ int main(void)
                 }
                 else
                 {
-                    // TODO: Temporary indicator that the guess was not in the
-                    //       word list
+                    invalid_word_frame_count = 120;
                 }
             }
 
             key = GetKeyPressed();
+        }
+
+        if (invalid_word_frame_count >= 0)
+        {
+            --invalid_word_frame_count;
         }
 
         //---------------------------------------------------------------------
@@ -140,6 +151,14 @@ int main(void)
         ClearBackground(BLACK);
 
         centered_text_render(&title);
+
+        if (invalid_word_frame_count > 0)
+        {
+            Centered_Text ct;
+            centered_text_init(&ct, (char *)"Invalid Word", 20, 80, RED,
+                               screen_width);
+            centered_text_render(&ct);
+        }
 
         const int start_x = 130;
         const int start_y = 120;
@@ -177,8 +196,8 @@ int main(void)
     return 0;
 }
 
-static inline bool tile_str_compare(const Tile tiles[WORD_LENGTH],
-                                    const char word[WORD_LENGTH])
+static inline bool compare_tile_to_string(const Tile tiles[WORD_LENGTH],
+                                          const char word[WORD_LENGTH])
 {
     bool res = true;
     for (size_t i = 0; i < WORD_LENGTH; ++i)
