@@ -124,16 +124,19 @@ int main(void)
                         // counts then make them gray
                         for (jj = 0; jj < WORD_LENGTH; ++jj)
                         {
-                            char c = guesses[guess_index][jj].c;
+                            if (guesses[guess_index][jj].color.g != GREEN.g)
+                            {
+                                char c = guesses[guess_index][jj].c;
 
-                            if (counts[c - 'a'] > 0)
-                            {
-                                guesses[guess_index][jj].color = YELLOW;
-                                --counts[c - 'a'];
-                            }
-                            else
-                            {
-                                guesses[guess_index][jj].color = GRAY;
+                                if (counts[c - 'a'] > 0)
+                                {
+                                    guesses[guess_index][jj].color = YELLOW;
+                                    --counts[c - 'a'];
+                                }
+                                else
+                                {
+                                    guesses[guess_index][jj].color = GRAY;
+                                }
                             }
                         }
 
