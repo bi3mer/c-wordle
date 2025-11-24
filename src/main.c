@@ -10,7 +10,7 @@
 #include "words.h"
 
 #define NUM_GUESSES 6
-#define WORD_LENGTH 5
+#define WORD_LENGTH 6
 
 #define CELL_SIZE 100
 #define CELL_SPACING 8
@@ -103,13 +103,13 @@ int main(void)
                         size_t jj;
 
                         // get counts of each letter in the word
-                        for (jj = 0; jj < WORD_LENGTH; ++jj)
+                        for (jj = 0; jj < WORD_LENGTH - 1; ++jj)
                         {
                             ++counts[WORDS[word_index][jj] - 'a'];
                         }
 
                         // prioritize finding green letters first
-                        for (jj = 0; jj < WORD_LENGTH; ++jj)
+                        for (jj = 0; jj < WORD_LENGTH - 1; ++jj)
                         {
                             char c = WORDS[word_index][jj];
 
@@ -122,7 +122,7 @@ int main(void)
 
                         // find yellow letters next, and if they aren't in the
                         // counts then make them gray
-                        for (jj = 0; jj < WORD_LENGTH; ++jj)
+                        for (jj = 0; jj < WORD_LENGTH - 1; ++jj)
                         {
                             if (guesses[guess_index][jj].color.g != GREEN.g)
                             {
@@ -237,7 +237,7 @@ int main(void)
         {
             const int y = start_y + row * (CELL_SIZE + CELL_SPACING);
 
-            for (int col = 0; col < WORD_LENGTH; col++)
+            for (int col = 0; col < WORD_LENGTH - 1; col++)
             {
                 const int x = start_x + col * (CELL_SIZE + CELL_SPACING);
                 const Tile *t = &guesses[row][col];
