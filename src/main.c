@@ -15,6 +15,8 @@
 #define CELL_SIZE 100
 #define CELL_SPACING 8
 
+#define NOTIFICATION_FRAME_COUNT 120
+
 typedef struct
 {
     Color color;
@@ -23,6 +25,8 @@ typedef struct
 
 static inline bool compare_tile_to_string(const Tile tiles[WORD_LENGTH],
                                           const char word[WORD_LENGTH]);
+
+static inline void reset_guesses(Tile guesses[NUM_GUESSES][WORD_LENGTH]);
 
 int main(void)
 {
@@ -39,28 +43,16 @@ int main(void)
     Centered_Text title;
     centered_text_init(&title, "Wordle Clone", 40, 30, WHITE, screen_width);
 
-    // size_t word_index = GetRandomValue(0, NUM_WORDS - 1);
-    size_t word_index = 0;
+    size_t word_index = GetRandomValue(0, NUM_WORDS - 1);
     int guess_index = 0;
     size_t guess_word_index = 0;
 
     Tile guesses[NUM_GUESSES][WORD_LENGTH];
-    for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
-    {
-        guesses[0][jj].color = RAYWHITE;
-        guesses[0][jj].c = '\0';
-    }
-
-    for (size_t i = 1; i < NUM_GUESSES; ++i)
-    {
-        for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
-        {
-            guesses[i][jj].color = BLACK;
-            guesses[i][jj].c = '\0';
-        }
-    }
+    reset_guesses(guesses);
 
     int invalid_word_frame_count = -1;
+    int player_won_frame_count = -1;
+    int player_lost_frame_count = -1;
 
     ///////////////////////////////////////////////////////////////////////////
     // Game Loop
@@ -70,7 +62,8 @@ int main(void)
         // Game Logic
         //---------------------------------------------------------------------
         int key = GetKeyPressed();
-        while (key != 0)
+        while (key != 0 && player_won_frame_count == -1 &&
+               player_lost_frame_count == -1)
         {
             if (isalpha(key) && guess_word_index < WORD_LENGTH)
             {
@@ -100,17 +93,43 @@ int main(void)
                         {
                             guesses[guess_index][jj].color = GREEN;
                         }
-                        // TODO: PLAYER WON
+
+                        player_won_frame_count = NOTIFICATION_FRAME_COUNT;
                     }
                     else
                     {
-                        // figure out tile colors for the guess
-                        for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
+                        //// figure out tile colors for the guess
+                        int counts[26] = {0};
+                        size_t jj;
+
+                        // get counts of each letter in the word
+                        for (jj = 0; jj < WORD_LENGTH; ++jj)
                         {
-                            if (WORDS[word_index][jj] ==
-                                guesses[guess_index][jj].c)
+                            ++counts[WORDS[word_index][jj] - 'a'];
+                        }
+
+                        // prioritize finding green letters first
+                        for (jj = 0; jj < WORD_LENGTH; ++jj)
+                        {
+                            char c = WORDS[word_index][jj];
+
+                            if (c == guesses[guess_index][jj].c)
                             {
                                 guesses[guess_index][jj].color = GREEN;
+                                --counts[c - 'a'];
+                            }
+                        }
+
+                        // find yellow letters next, and if they aren't in the
+                        // counts then make them gray
+                        for (jj = 0; jj < WORD_LENGTH; ++jj)
+                        {
+                            char c = guesses[guess_index][jj].c;
+
+                            if (counts[c - 'a'] > 0)
+                            {
+                                guesses[guess_index][jj].color = YELLOW;
+                                --counts[c - 'a'];
                             }
                             else
                             {
@@ -119,7 +138,7 @@ int main(void)
                         }
 
                         ++guess_index;
-                        for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
+                        for (jj = 0; jj < WORD_LENGTH; ++jj)
                         {
                             guesses[guess_index][jj].color = RAYWHITE;
                         }
@@ -127,12 +146,15 @@ int main(void)
                         guess_word_index = 0;
                     }
 
-                    // TODO: If the number of guesses is greater than the number
-                    //       of rows, then the game is over and the player lost
+                    if (guess_index >= NUM_GUESSES &&
+                        player_won_frame_count == -1)
+                    {
+                        player_lost_frame_count = NOTIFICATION_FRAME_COUNT;
+                    }
                 }
                 else
                 {
-                    invalid_word_frame_count = 120;
+                    invalid_word_frame_count = NOTIFICATION_FRAME_COUNT;
                 }
             }
 
@@ -140,8 +162,37 @@ int main(void)
         }
 
         if (invalid_word_frame_count >= 0)
-        {
             --invalid_word_frame_count;
+
+        if (player_won_frame_count >= 0)
+        {
+            --player_won_frame_count;
+            if (player_won_frame_count == 0)
+            {
+                word_index = GetRandomValue(0, NUM_WORDS - 1);
+                guess_index = 0;
+                guess_word_index = 0;
+                reset_guesses(guesses);
+
+                invalid_word_frame_count = -1;
+                player_won_frame_count = -1;
+                player_lost_frame_count = -1;
+            }
+        }
+        if (player_lost_frame_count >= 0)
+        {
+            --player_lost_frame_count;
+            if (player_lost_frame_count == 0)
+            {
+                word_index = GetRandomValue(0, NUM_WORDS - 1);
+                guess_index = 0;
+                guess_word_index = 0;
+                reset_guesses(guesses);
+
+                invalid_word_frame_count = -1;
+                player_won_frame_count = -1;
+                player_lost_frame_count = -1;
+            }
         }
 
         //---------------------------------------------------------------------
@@ -152,7 +203,22 @@ int main(void)
 
         centered_text_render(&title);
 
-        if (invalid_word_frame_count > 0)
+        if (player_won_frame_count > 0)
+        {
+            Centered_Text ct;
+            centered_text_init(&ct, (char *)"You Won!!!", 20, 80, GREEN,
+                               screen_width);
+            centered_text_render(&ct);
+        }
+        else if (player_lost_frame_count > 0)
+        {
+            char buffer[24];
+            sprintf(buffer, "Correct Word was: %s", WORDS[word_index]);
+            Centered_Text ct;
+            centered_text_init(&ct, buffer, 20, 80, RED, screen_width);
+            centered_text_render(&ct);
+        }
+        else if (invalid_word_frame_count > 0)
         {
             Centered_Text ct;
             centered_text_init(&ct, (char *)"Invalid Word", 20, 80, RED,
@@ -210,4 +276,22 @@ static inline bool compare_tile_to_string(const Tile tiles[WORD_LENGTH],
     }
 
     return res;
+}
+
+static inline void reset_guesses(Tile guesses[NUM_GUESSES][WORD_LENGTH])
+{
+    for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
+    {
+        guesses[0][jj].color = RAYWHITE;
+        guesses[0][jj].c = '\0';
+    }
+
+    for (size_t i = 1; i < NUM_GUESSES; ++i)
+    {
+        for (size_t jj = 0; jj < WORD_LENGTH; ++jj)
+        {
+            guesses[i][jj].color = BLACK;
+            guesses[i][jj].c = '\0';
+        }
+    }
 }
