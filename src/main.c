@@ -38,12 +38,12 @@ int main(void)
     InitWindow(screen_width, screen_height, "Wordle");
     SetTargetFPS(60);
 
-    SetRandomSeed(time(NULL));
+    SetRandomSeed((unsigned int)time(NULL));
 
     Centered_Text title;
     centered_text_init(&title, "Wordle Clone", 40, 30, WHITE, screen_width);
 
-    size_t word_index = GetRandomValue(0, NUM_WORDS - 1);
+    size_t word_index = (size_t)GetRandomValue(0, NUM_WORDS - 1);
     int guess_index = 0;
     size_t guess_word_index = 0;
 
@@ -172,7 +172,7 @@ int main(void)
             --player_won_frame_count;
             if (player_won_frame_count == 0)
             {
-                word_index = GetRandomValue(0, NUM_WORDS - 1);
+                word_index = (size_t)GetRandomValue(0, NUM_WORDS - 1);
                 guess_index = 0;
                 guess_word_index = 0;
                 reset_guesses(guesses);
@@ -187,7 +187,7 @@ int main(void)
             --player_lost_frame_count;
             if (player_lost_frame_count == 0)
             {
-                word_index = GetRandomValue(0, NUM_WORDS - 1);
+                word_index = (size_t)GetRandomValue(0, NUM_WORDS - 1);
                 guess_index = 0;
                 guess_word_index = 0;
                 reset_guesses(guesses);
