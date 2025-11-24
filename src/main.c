@@ -152,7 +152,8 @@ int main(void)
                     if (guess_index >= NUM_GUESSES &&
                         player_won_frame_count == -1)
                     {
-                        player_lost_frame_count = NOTIFICATION_FRAME_COUNT;
+                        player_lost_frame_count =
+                            (int)(NOTIFICATION_FRAME_COUNT * 1.5f);
                     }
                 }
                 else
