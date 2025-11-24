@@ -1,4 +1,3 @@
-#include "centered_text.h"
 #include "raylib.h"
 #include <ctype.h>
 #include <stddef.h>
@@ -7,6 +6,7 @@
 #include <string.h>
 #include <time.h>
 
+#include "centered_text.h"
 #include "words.h"
 
 #define NUM_GUESSES 6
