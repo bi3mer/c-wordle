@@ -1,6 +1,7 @@
 CompileFlags:
   Add:
     - -std=c99
+    - -I../deps/raylib/src
     - -pedantic-errors
     - -Wall
     - -Wextra

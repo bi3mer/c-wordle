@@ -141,9 +141,12 @@ int main(void)
                         }
 
                         ++guess_index;
-                        for (jj = 0; jj < WORD_LENGTH; ++jj)
+                        if (guess_index < NUM_GUESSES)
                         {
-                            guesses[guess_index][jj].color = RAYWHITE;
+                            for (jj = 0; jj < WORD_LENGTH - 1; ++jj)
+                            {
+                                guesses[guess_index][jj].color = RAYWHITE;
+                            }
                         }
 
                         guess_word_index = 0;
