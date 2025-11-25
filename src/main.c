@@ -50,6 +50,8 @@ int main(void)
     Tile guesses[NUM_GUESSES][WORD_LENGTH];
     reset_guesses(guesses);
 
+    bool bad_letters[26] = {0};
+
     int invalid_word_frame_count = -1;
     int player_won_frame_count = -1;
     int player_lost_frame_count = -1;
@@ -65,15 +67,20 @@ int main(void)
         while (key != 0 && player_won_frame_count == -1 &&
                player_lost_frame_count == -1)
         {
-            if (isalpha(key) && guess_word_index < WORD_LENGTH)
+            if (isalpha(key) && guess_word_index < WORD_LENGTH - 1)
             {
-                guesses[guess_index][guess_word_index].c = (char)tolower(key);
+                const char c = (char)tolower(key);
+
+                guesses[guess_index][guess_word_index].color =
+                    bad_letters[c - 'a'] ? GRAY : RAYWHITE;
+                guesses[guess_index][guess_word_index].c = c;
                 ++guess_word_index;
                 guesses[guess_index][guess_word_index].c = '\0';
             }
             else if (key == KEY_BACKSPACE && guess_word_index > 0)
             {
                 --guess_word_index;
+                guesses[guess_index][guess_word_index].color = RAYWHITE;
                 guesses[guess_index][guess_word_index].c = '\0';
             }
             else if (key == KEY_ENTER && guess_word_index >= WORD_LENGTH - 1)
@@ -136,6 +143,7 @@ int main(void)
                                 else
                                 {
                                     guesses[guess_index][jj].color = GRAY;
+                                    bad_letters[c - 'a'] = true;
                                 }
                             }
                         }
@@ -184,6 +192,8 @@ int main(void)
                 invalid_word_frame_count = -1;
                 player_won_frame_count = -1;
                 player_lost_frame_count = -1;
+
+                memset(bad_letters, 0, sizeof(bad_letters));
             }
         }
         if (player_lost_frame_count >= 0)
@@ -199,6 +209,8 @@ int main(void)
                 invalid_word_frame_count = -1;
                 player_won_frame_count = -1;
                 player_lost_frame_count = -1;
+
+                memset(bad_letters, 0, sizeof(bad_letters));
             }
         }
 
