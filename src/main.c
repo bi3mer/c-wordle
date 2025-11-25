@@ -143,7 +143,10 @@ int main(void)
                                 else
                                 {
                                     guesses[guess_index][jj].color = GRAY;
-                                    bad_letters[c - 'a'] = true;
+                                    if (strchr(WORDS[word_index], c) == NULL)
+                                    {
+                                        bad_letters[c - 'a'] = true;
+                                    }
                                 }
                             }
                         }
