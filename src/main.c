@@ -37,6 +37,7 @@ int main(void)
 
     InitWindow(screen_width, screen_height, "Wordle");
     SetTargetFPS(60);
+    EnableEventWaiting();
 
     SetRandomSeed((unsigned int)time(NULL));
 
