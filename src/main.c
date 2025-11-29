@@ -9,6 +9,8 @@
 #include "centered_text.h"
 #include "words.h"
 
+typedef uint32_t u32;
+
 #define NUM_GUESSES 6
 #define WORD_LENGTH 6
 
@@ -28,6 +30,16 @@ static inline bool compare_tile_to_string(const Tile tiles[WORD_LENGTH],
 
 static inline void reset_guesses(Tile guesses[NUM_GUESSES][WORD_LENGTH]);
 
+static inline void print_bits(u32 num)
+{
+    for (u32 bit = 0; bit < (sizeof(num) * 8); bit++)
+    {
+        printf("%i ", num & 0x01);
+        num = num >> 1;
+    }
+    printf("\n");
+}
+
 int main(void)
 {
     ///////////////////////////////////////////////////////////////////////////
@@ -41,16 +53,19 @@ int main(void)
     SetRandomSeed((unsigned int)time(NULL));
 
     Centered_Text title;
-    centered_text_init(&title, "Wordle Clone", 40, 30, WHITE, screen_width);
+    centered_text_init(&title, (char *)"Wordle Clone", 40, 30, WHITE,
+                       screen_width);
 
     size_t word_index = (size_t)GetRandomValue(0, NUM_WORDS - 1);
+    word_index = 0; // todo: remove me
     int guess_index = 0;
     size_t guess_word_index = 0;
 
     Tile guesses[NUM_GUESSES][WORD_LENGTH];
     reset_guesses(guesses);
 
-    bool bad_letters[26] = {0};
+    u32 puzzle_progress[WORD_LENGTH - 1];
+    memset(puzzle_progress, UINT32_MAX, sizeof(puzzle_progress));
 
     int invalid_word_frame_count = -1;
     int player_won_frame_count = -1;
@@ -71,9 +86,12 @@ int main(void)
             {
                 const char c = (char)tolower(key);
 
-                guesses[guess_index][guess_word_index].color =
-                    bad_letters[c - 'a'] ? GRAY : RAYWHITE;
                 guesses[guess_index][guess_word_index].c = c;
+                guesses[guess_index][guess_word_index].color =
+                    (puzzle_progress[guess_word_index] >> (c - 'a') & 1)
+                        ? RAYWHITE
+                        : GRAY;
+
                 ++guess_word_index;
                 guesses[guess_index][guess_word_index].c = '\0';
             }
@@ -105,47 +123,56 @@ int main(void)
                     }
                     else
                     {
-                        //// figure out tile colors for the guess
-                        int counts[26] = {0};
                         size_t jj;
+                        char guess_c;
+                        int counts[26] = {0};
 
-                        // get counts of each letter in the word
+                        // find letters in the correct position
                         for (jj = 0; jj < WORD_LENGTH - 1; ++jj)
                         {
                             ++counts[WORDS[word_index][jj] - 'a'];
-                        }
 
-                        // prioritize finding green letters first
-                        for (jj = 0; jj < WORD_LENGTH - 1; ++jj)
-                        {
-                            char c = WORDS[word_index][jj];
-
-                            if (c == guesses[guess_index][jj].c)
+                            guess_c = guesses[guess_index][jj].c;
+                            if (WORDS[word_index][jj] == guess_c)
                             {
                                 guesses[guess_index][jj].color = GREEN;
-                                --counts[c - 'a'];
+                                puzzle_progress[jj] = (1 << (guess_c - 'a'));
+                                --counts[WORDS[word_index][jj] - 'a'];
                             }
                         }
 
-                        // find yellow letters next, and if they aren't in the
-                        // counts then make them gray
+                        // find letters in the incorrect positions
                         for (jj = 0; jj < WORD_LENGTH - 1; ++jj)
                         {
                             if (guesses[guess_index][jj].color.g != GREEN.g)
                             {
-                                char c = guesses[guess_index][jj].c;
+                                guess_c = guesses[guess_index][jj].c;
 
-                                if (counts[c - 'a'] > 0)
+                                if (counts[guess_c - 'a'] > 0)
                                 {
+                                    --counts[guess_c - 'a'];
+
                                     guesses[guess_index][jj].color = YELLOW;
-                                    --counts[c - 'a'];
+                                    puzzle_progress[jj] &=
+                                        ~(1 << (guess_c - 'a'));
                                 }
                                 else
                                 {
                                     guesses[guess_index][jj].color = GRAY;
-                                    if (strchr(WORDS[word_index], c) == NULL)
+                                    if (strchr(WORDS[word_index], guess_c) ==
+                                        NULL)
                                     {
-                                        bad_letters[c - 'a'] = true;
+                                        for (size_t k = 0; k < WORD_LENGTH - 1;
+                                             ++k)
+                                        {
+                                            puzzle_progress[k] &=
+                                                ~(1 << (guess_c - 'a'));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        puzzle_progress[jj] &=
+                                            ~(1 << (guess_c - 'a'));
                                     }
                                 }
                             }
@@ -196,7 +223,7 @@ int main(void)
                 player_won_frame_count = -1;
                 player_lost_frame_count = -1;
 
-                memset(bad_letters, 0, sizeof(bad_letters));
+                memset(puzzle_progress, UINT32_MAX, sizeof(puzzle_progress));
             }
         }
         if (player_lost_frame_count >= 0)
@@ -213,7 +240,7 @@ int main(void)
                 player_won_frame_count = -1;
                 player_lost_frame_count = -1;
 
-                memset(bad_letters, 0, sizeof(bad_letters));
+                memset(puzzle_progress, UINT32_MAX, sizeof(puzzle_progress));
             }
         }
 
