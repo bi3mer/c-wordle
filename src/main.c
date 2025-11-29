@@ -1,6 +1,7 @@
 #include "raylib.h"
 #include <ctype.h>
 #include <stddef.h>
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -29,16 +30,6 @@ static inline bool compare_tile_to_string(const Tile tiles[WORD_LENGTH],
                                           const char word[WORD_LENGTH]);
 
 static inline void reset_guesses(Tile guesses[NUM_GUESSES][WORD_LENGTH]);
-
-static inline void print_bits(u32 num)
-{
-    for (u32 bit = 0; bit < (sizeof(num) * 8); bit++)
-    {
-        printf("%i ", num & 0x01);
-        num = num >> 1;
-    }
-    printf("\n");
-}
 
 int main(void)
 {
