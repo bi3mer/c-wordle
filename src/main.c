@@ -48,7 +48,6 @@ int main(void)
                        screen_width);
 
     size_t word_index = (size_t)GetRandomValue(0, NUM_WORDS - 1);
-    word_index = 0; // todo: remove me
     int guess_index = 0;
     size_t guess_word_index = 0;
 
